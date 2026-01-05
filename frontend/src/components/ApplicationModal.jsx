@@ -67,7 +67,12 @@ const ApplicationModal = ({ isOpen, onClose, onSubmit, application = null }) => 
     setLoading(true);
 
     try {
-      await onSubmit(formData);
+      // Convert date to ISO-8601 DateTime format
+      const dataToSubmit = {
+        ...formData,
+        applicationDate: new Date(formData.applicationDate).toISOString(),
+      };
+      await onSubmit(dataToSubmit);
       onClose();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save application');
