@@ -69,6 +69,14 @@ body {
   background-color: #0056b3;
 }
 
+.btn-danger {
+  background-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
 /* Loading */
 .loading {
   display: flex;

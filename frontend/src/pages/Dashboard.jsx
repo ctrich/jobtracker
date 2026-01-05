@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { applicationsAPI } from '../services/api';
+import ApplicationModal from '../components/ApplicationModal';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
@@ -8,6 +9,8 @@ const Dashboard = () => {
   const [applications, setApplications] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingApplication, setEditingApplication] = useState(null);
 
   useEffect(() => {
     fetchApplications();
@@ -56,6 +59,47 @@ const Dashboard = () => {
     return colors[status] || '#6c757d';
   };
 
+  const handleAddApplication = async (formData) => {
+    await applicationsAPI.create(formData);
+    await fetchApplications();
+    await fetchStats();
+  };
+
+  const handleEditApplication = async (formData) => {
+    await applicationsAPI.update(editingApplication.id, formData);
+    await fetchApplications();
+    await fetchStats();
+    setEditingApplication(null);
+  };
+
+  const handleDeleteApplication = async (id) => {
+    if (window.confirm('Are you sure you want to delete this application?')) {
+      try {
+        await applicationsAPI.delete(id);
+        await fetchApplications();
+        await fetchStats();
+      } catch (error) {
+        console.error('Error deleting application:', error);
+        alert('Failed to delete application');
+      }
+    }
+  };
+
+  const openAddModal = () => {
+    setEditingApplication(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (application) => {
+    setEditingApplication(application);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingApplication(null);
+  };
+
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
@@ -90,7 +134,9 @@ const Dashboard = () => {
       <div className="applications-section">
         <div className="section-header">
           <h2>Your Applications</h2>
-          <button className="btn-primary">+ Add Application</button>
+          <button className="btn-primary" onClick={openAddModal}>
+            + Add Application
+          </button>
         </div>
 
         {applications.length === 0 ? (
@@ -126,8 +172,18 @@ const Dashboard = () => {
                     <td>{formatDate(app.applicationDate)}</td>
                     <td>{app.location || 'N/A'}</td>
                     <td>
-                      <button className="btn-small">View</button>
-                      <button className="btn-small">Edit</button>
+                      <button 
+                        className="btn-small" 
+                        onClick={() => openEditModal(app)}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        className="btn-small btn-danger" 
+                        onClick={() => handleDeleteApplication(app.id)}
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -136,6 +192,13 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      <ApplicationModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSubmit={editingApplication ? handleEditApplication : handleAddApplication}
+        application={editingApplication}
+      />
     </div>
   );
 };
