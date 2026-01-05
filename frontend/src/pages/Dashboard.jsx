@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { applicationsAPI } from '../services/api';
 import ApplicationModal from '../components/ApplicationModal';
@@ -6,6 +7,7 @@ import '../styles/Dashboard.css';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -172,6 +174,12 @@ const Dashboard = () => {
                     <td>{formatDate(app.applicationDate)}</td>
                     <td>{app.location || 'N/A'}</td>
                     <td>
+                      <button 
+                        className="btn-small"
+                        onClick={() => navigate(`/applications/${app.id}`)}
+                      >
+                        View
+                      </button>
                       <button 
                         className="btn-small" 
                         onClick={() => openEditModal(app)}
